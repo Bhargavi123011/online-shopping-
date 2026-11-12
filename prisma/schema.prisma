@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String?        @unique
+  passwordHash  String?
+  consent       Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  results       TryOnResult[]
+  history       HistoryEntry[]
+}
+
+model ProductRecord {
+  id                 String         @id @default(cuid())
+  platform           String
+  url                String
+  title              String
+  brand              String
+  category           String
+  price              Float?
+  currency           String?
+  source             String
+  sizeChart          Json
+  imageUrl           String?
+  isEstimated        Boolean        @default(false)
+  createdAt          DateTime       @default(now())
+  history            HistoryEntry[]
+  tryOnResults       TryOnResult[]
+}
+
+model TryOnResult {
+  id               String        @id @default(cuid())
+  userId           String?
+  productId        String?
+  recommendedSize  String
+  selectedSize     String
+  fitLabel         String
+  generationMode   String
+  resultImageUrl   String?
+  metadata         Json
+  createdAt        DateTime      @default(now())
+  user             User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  product          ProductRecord? @relation(fields: [productId], references: [id], onDelete: SetNull)
+}
+
+model HistoryEntry {
+  id          String        @id @default(cuid())
+  userId      String?
+  productId   String?
+  action      String
+  status      String
+  summary     String
+  createdAt   DateTime      @default(now())
+  user        User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  product     ProductRecord? @relation(fields: [productId], references: [id], onDelete: SetNull)
+}
+
+model SecurityEvent {
+  id          String   @id @default(cuid())
+  eventType   String
+  message     String
+  severity    String
+  createdAt   DateTime @default(now())
+}
